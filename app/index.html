@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard-header">
+        <p class="dashboard-header__eyebrow">Team overview</p>
+        <h1>Project Pulse</h1>
+        <p class="dashboard-header__intro">A quick look at what your team is working on.</p>
+      </header>
+
+      <section class="project-section" aria-labelledby="projects-heading">
+        <div class="project-section__heading">
+          <h2 id="projects-heading">Projects</h2>
+          <p id="project-count" class="project-count" hidden></p>
+        </div>
+
+        <p id="loading-state" class="dashboard-message" role="status">Loading projects…</p>
+        <p id="empty-state" class="dashboard-message" role="status" hidden>No projects to show yet.</p>
+        <p id="error-state" class="dashboard-message dashboard-message--error" role="alert" hidden>
+          Projects could not be loaded. Please try again later.
+        </p>
+        <div id="project-grid" class="project-grid" aria-live="polite" aria-busy="true"></div>
+      </section>
+    </main>
+
+    <script>
+      (() => {
+        const grid = document.getElementById("project-grid");
+        const loadingState = document.getElementById("loading-state");
+        const emptyState = document.getElementById("empty-state");
+        const errorState = document.getElementById("error-state");
+        const projectCount = document.getElementById("project-count");
+        const statusLabels = {
+          active: "Active",
+          "at-risk": "At risk",
+          blocked: "Blocked",
+          completed: "Completed"
+        };
+        const priorityLabels = {
+          high: "High",
+          medium: "Medium",
+          low: "Low"
+        };
+
+        function fieldText(project, field, fallback) {
+          const value = project && project[field];
+          return typeof value === "string" && value.trim() ? value : fallback;
+        }
+
+        function makeTextElement(tagName, className, value) {
+          const element = document.createElement(tagName);
+          element.className = className;
+          element.textContent = value;
+          return element;
+        }
+
+        function makeBadge(className, type, value, labels, fallback) {
+          const badge = document.createElement("span");
+          const knownValue = Object.hasOwn(labels, value);
+          badge.className = className;
+          badge.dataset[type] = knownValue ? value : "unknown";
+          badge.textContent = knownValue ? labels[value] : fallback;
+          return badge;
+        }
+
+        function renderProject(project) {
+          const card = document.createElement("article");
+          const heading = makeTextElement(
+            "h3",
+            "project-card__name",
+            fieldText(project, "name", "Untitled project")
+          );
+          const badges = document.createElement("div");
+          const details = document.createElement("dl");
+          const owner = fieldText(project, "owner", "Not provided");
+          const activity = fieldText(project, "recentActivity", "No recent activity provided");
+          const summary = fieldText(project, "summary", "No summary provided.");
+
+          card.className = "project-card";
+          badges.className = "project-card__badges";
+          details.className = "project-card__details";
+          card.append(heading);
+          badges.append(
+            makeBadge(
+              "status-badge",
+              "status",
+              fieldText(project, "status", ""),
+              statusLabels,
+              "Unknown status"
+            ),
+            makeBadge(
+              "priority-badge",
+              "priority",
+              fieldText(project, "priority", ""),
+              priorityLabels,
+              "Unknown priority"
+            )
+          );
+          card.append(badges);
+
+          [
+            ["Owner", owner],
+            ["Recent activity", activity]
+          ].forEach(([label, value]) => {
+            details.append(
+              makeTextElement("dt", "project-card__label", label),
+              makeTextElement("dd", "project-card__value", value)
+            );
+          });
+          card.append(details);
+          card.append(makeTextElement("p", "project-card__summary", summary));
+          return card;
+        }
+
+        async function loadProjects() {
+          try {
+            const response = await fetch("project-data.json");
+            if (!response.ok) {
+              throw new Error(`Request failed with status ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (!data || !Array.isArray(data.projects)) {
+              throw new Error("Project data must contain a projects array");
+            }
+
+            if (data.projects.length === 0) {
+              emptyState.hidden = false;
+              return;
+            }
+
+            const cards = document.createDocumentFragment();
+            data.projects.forEach((project) => cards.append(renderProject(project)));
+            grid.append(cards);
+            projectCount.textContent = `${data.projects.length} ${
+              data.projects.length === 1 ? "project" : "projects"
+            }`;
+            projectCount.hidden = false;
+          } catch (error) {
+            errorState.textContent =
+              error instanceof SyntaxError
+                ? "Project data is not valid JSON. Please check the data file and try again."
+                : "Projects could not be loaded. Please check the data file or server and try again.";
+            errorState.hidden = false;
+          } finally {
+            loadingState.hidden = true;
+            grid.setAttribute("aria-busy", "false");
+          }
+        }
+
+        loadProjects();
+      })();
+    </script>
+  </body>
+</html>

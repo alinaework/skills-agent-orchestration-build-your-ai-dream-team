@@ -1,0 +1,36 @@
+{
+  "projects": [
+    {
+      "name": "Community Portal",
+      "owner": "Mona Patel",
+      "status": "active",
+      "recentActivity": "Published the updated contributor guide",
+      "priority": "high",
+      "summary": "A welcoming home for contributors to find resources, share updates, and get involved."
+    },
+    {
+      "name": "Data Explorer",
+      "owner": "Jordan Lee",
+      "status": "at-risk",
+      "recentActivity": "Dashboard review moved to next Tuesday",
+      "priority": "medium",
+      "summary": "An interactive way for teams to explore shared program data and spot useful trends."
+    },
+    {
+      "name": "Accessibility Refresh",
+      "owner": "Sam Rivera",
+      "status": "blocked",
+      "recentActivity": "Waiting on updated design review",
+      "priority": "high",
+      "summary": "Improving keyboard access, screen-reader support, and readability across the product."
+    },
+    {
+      "name": "Starter Kit",
+      "owner": "Avery Chen",
+      "status": "completed",
+      "recentActivity": "Released the starter templates",
+      "priority": "low",
+      "summary": "Reusable templates and examples that help new teams get started quickly."
+    }
+  ]
+}
