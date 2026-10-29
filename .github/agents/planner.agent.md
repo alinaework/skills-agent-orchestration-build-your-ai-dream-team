@@ -1,7 +1,7 @@
 ---
 name: Planner
 description: Creates implementation plans by researching the codebase, documentation, dependencies, and edge cases.
-model: Claude Opus 5.5 (copilot)
+model: gpt-5.6-luna
 tools: ['read', 'search', 'web', 'memory', 'todo']
 ---
 
